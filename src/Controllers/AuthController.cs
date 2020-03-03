@@ -14,14 +14,14 @@ namespace blog.netcore.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class TokenController : ControllerBase
+    public class AuthController : ControllerBase
     {
 
         private readonly IUserService _userService;
         private readonly TokenService _tokenService;
         private readonly ILogger<Post> _logger;
 
-        public TokenController(ILogger<Post> logger, IUserService userService, TokenService tokenService)
+        public AuthController(ILogger<Post> logger, IUserService userService, TokenService tokenService)
         {
             _logger = logger;
             _userService = userService;
@@ -29,6 +29,7 @@ namespace blog.netcore.Controllers
         }
 
         [HttpPost]
+        [Route("token")]
         public TokenResponse Post()
         {
             var model = new LoginModel() {
