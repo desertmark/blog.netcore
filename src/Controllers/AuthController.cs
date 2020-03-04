@@ -30,12 +30,8 @@ namespace blog.netcore.Controllers
 
         [HttpPost]
         [Route("token")]
-        public TokenResponse Post()
+        public TokenResponse Post([FromBody] LoginModel model)
         {
-            var model = new LoginModel() {
-                UserName = "admin",
-                Password = "admin",
-            };
             var user = this._userService.Get().First(u => u.UserName == model.UserName);
             var token = this._tokenService.GenerateToken(user);
             return new TokenResponse() {

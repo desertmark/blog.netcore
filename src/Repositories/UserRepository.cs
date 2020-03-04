@@ -18,5 +18,9 @@ namespace blog.netcore.Repositories
         public User Get(int UserId) {
             return this._db.Users.First(u => u.UserId == UserId);
         }
+
+        public User Get(string UserName) {
+            return this._db.Users.First(u => u.UserName == UserName);
+        }
     }
 }
