@@ -9,4 +9,9 @@ namespace blog.netcore.Models
         public JwtSecurityToken TokenModel { get; set; }
 
     }
+
+    public class RefreshToken {
+        public Token Refresh { get; set; }
+        public Token Token { get; set; }
+    }
 }

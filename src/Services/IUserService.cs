@@ -7,4 +7,6 @@ public interface IUserService {
     IEnumerable<User> Get();
     User Get(int UserId);
     User Get(string UserName);
+    void Create(User user);
+    void Update(User user);
 }

@@ -22,5 +22,15 @@ namespace blog.netcore.Repositories
         public User Get(string UserName) {
             return this._db.Users.First(u => u.UserName == UserName);
         }
+
+        public void Create(User user) {
+            this._db.Add(user);
+            this._db.SaveChanges();
+        }
+
+        public void Update(User user) {
+            this._db.Users.Update(user);
+            this._db.SaveChanges();
+        }
     }
 }

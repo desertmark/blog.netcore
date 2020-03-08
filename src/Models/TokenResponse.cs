@@ -5,6 +5,7 @@ namespace blog.netcore.Models
     public class TokenResponse
     {
         public string Token { get; set; }
+        public string RefreshToken { get; set; }
 
         public DateTime ExpiresAt { get; set; }
 

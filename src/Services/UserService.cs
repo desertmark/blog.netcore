@@ -18,8 +18,8 @@ namespace blog.netcore.Services
             get {
                 if (currentUser == null) {
                     var session = this.tokenService.GetSession();
-                    var userId = int.Parse(session.Identity.Name);
-                    this.currentUser = this.Get(userId);
+                    var userName = session.Identity.Name;
+                    this.currentUser = this.Get(userName);
                 }
                 return this.currentUser;
             }
@@ -42,6 +42,14 @@ namespace blog.netcore.Services
 
         public User Get(string UserName) {
             return this.userRepository.Get(UserName);
+        }
+
+        public void Create(User user) {
+            this.userRepository.Create(user);
+        }
+
+        public void Update(User user) {
+            this.userRepository.Update(user);
         }
     }
 }

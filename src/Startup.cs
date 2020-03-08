@@ -19,6 +19,9 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using blog.netcore.Models;
 using System.Text;
+using System.IdentityModel.Tokens.Jwt;
+using Microsoft.Extensions.Options;
+using blog.netcore.Configuration;
 
 namespace blog.netcore
 {
@@ -45,40 +48,37 @@ namespace blog.netcore
             services.AddScoped<IPostRepository, PostRepository>();
             services.AddScoped<IPostService, PostService>();
 
-            //auth
             var appSettings = settings.Get<AppSettings>();
-            var key = Encoding.ASCII.GetBytes(appSettings.Secret);
-            services.AddAuthentication(opts =>
-            {
-                opts.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                opts.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            }).AddJwtBearer(opts =>
-            {
-                opts.RequireHttpsMetadata = false;
-                opts.SaveToken = true;
-                opts.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateLifetime = false,
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(key),
-                    ValidateIssuer = false,
-                    ValidateAudience = false,
-                };
-            });
+            // AUTH
             services.AddScoped<TokenService>();
+            services.AddScoped<AuthService>();
             // User
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IUserService, UserService>();
 
+            services.AddSingleton<IPostConfigureOptions<JwtBearerOptions>, ConfigureJwtBearerOptions>();
+            services.AddAuthentication(opts =>
+            {
+                opts.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                opts.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer();
+            services.AddAuthorization(opts => {
+                opts.AddPolicy("AccessToken", policy => {
+                    policy.RequireAssertion(context => {
+                        return context.User.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Typ)?.Value == "access";
+                    });
+                });
+            });
             services.AddControllers();
 
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IUserService userService, AuthService authService)
         {
             if (env.IsDevelopment())
             {
+                this.CreateAdminUser(userService, authService);
                 app.UseDeveloperExceptionPage();
             }
 
@@ -94,6 +94,13 @@ namespace blog.netcore
             });
 
             app.UseCors();
+        }
+
+        public void CreateAdminUser(IUserService userService, AuthService authService) {
+            if (userService.Get().Count() == 0) {
+                var admin = authService.CreateUser("admin", "admin");
+                userService.Create(admin);
+            }
         }
     }
 }

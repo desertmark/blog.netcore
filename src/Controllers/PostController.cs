@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 namespace blog.netcore.Controllers
 {
     [ApiController]
-    [Authorize]
+    [Authorize(Policy = "AccessToken")]
     [Route("[controller]")]
     public class PostController : ControllerBase
     {

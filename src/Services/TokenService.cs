@@ -26,7 +26,7 @@ namespace blog.netcore.Services
             _appSettings = appSettings.Value;
             _logger = logger;
         }
-        private JwtSecurityToken DecodeToken(string token)
+        public JwtSecurityToken DecodeToken(string token)
         {
             var handler = new JwtSecurityTokenHandler();
             return handler.ReadJwtToken(token);
@@ -37,18 +37,49 @@ namespace blog.netcore.Services
             return this._context.User;
         }
 
-        // public User Authenticate(string userName, string password) {
+        public SymmetricSecurityKey GenerateUserKey(User user) {
+            var key = this._appSettings.Secret + user.Nonce;
+            return new SymmetricSecurityKey(Encoding.ASCII.GetBytes(key));
+        }
 
-        // }
+        public bool ValidateRefreshToken(string refreshToken, User user) {
+            var handler = new JwtSecurityTokenHandler();
+            var validations = new TokenValidationParameters() {
+                ValidateIssuerSigningKey = true,
+                ValidateLifetime = true,
+                ValidateIssuer = false,
+                ValidateAudience = false,
+                IssuerSigningKey = this.GenerateUserKey(user),
+                ClockSkew = TimeSpan.Zero,
+            };
+            SecurityToken validToken;
+            try {
+                var principal = handler.ValidateToken(refreshToken, validations, out validToken);
+                return true;
+            } catch {
+                return false;
+            }
+        }
 
-        public Token GenerateToken(User user)
+        public Token GenerateToken(User user) {
+            // token type access: valid to access api resources
+            var claims = this.GetClaims(user).Append(new Claim(JwtRegisteredClaimNames.Typ, "access"));
+            return this.GenerateToken(user, DateTime.Now.AddSeconds(5), claims);
+        }
+
+        public Token GenerateRefreshToken(User user) {
+            // token type refresh: only valid in refresh token endpoint
+            var claims = this.GetClaims(user).Append(new Claim(JwtRegisteredClaimNames.Typ, "refresh"));
+            return this.GenerateToken(user, DateTime.Now.AddSeconds(20), claims);
+        }
+
+        private Token GenerateToken(User user, DateTime expires, IEnumerable<Claim> claims)
         {
-            var key = Encoding.ASCII.GetBytes(this._appSettings.Secret);
-            var claims = this.GetClaims(user);
-            var credentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature);
+            var key = this.GenerateUserKey(user);
+            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature);
             var descriptor = new SecurityTokenDescriptor() {
                 Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.Now.AddHours(1),
+                Expires = expires,
                 SigningCredentials = credentials,
             };
             var token = this.handler.CreateJwtSecurityToken(descriptor);
@@ -64,6 +95,10 @@ namespace blog.netcore.Services
                 new Claim(JwtRegisteredClaimNames.Sub, user.UserId.ToString()),
                 new Claim(JwtRegisteredClaimNames.UniqueName, user.UserName)
             };
+        }
+
+        public bool IsRefreshToken(JwtSecurityToken token) {
+            return token.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Typ)?.Value == "refresh";
         }
     }
 }
