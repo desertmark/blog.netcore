@@ -41,7 +41,7 @@ namespace blog.netcore.Configuration
         {
             JwtSecurityToken jwt = (JwtSecurityToken) securityToken;
             var user = this.GetUserById(int.Parse(jwt.Subject));
-            var key = this.appSettings.Value.Secret + user.Nonce;
+            var key = this.appSettings.Value.Secret + user?.Nonce;
             var keys = new List<SecurityKey>();
             keys.Add(new SymmetricSecurityKey(Encoding.ASCII.GetBytes(key)));
             return keys;

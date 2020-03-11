@@ -1,12 +1,13 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using blog.netcore.Models;
 
 public interface IUserService {
 
     User CurrentUser { get; }
-    IEnumerable<User> Get();
-    User Get(int UserId);
-    User Get(string UserName);
-    void Create(User user);
-    void Update(User user);
+    Task<IEnumerable<User>> Get();
+    Task<User> Get(int UserId);
+    Task<User> Get(string UserName);
+    Task Create(User user);
+    Task Update(User user);
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using blog.netcore.Context;
 using blog.netcore.Models;
 using Microsoft.AspNetCore.Http;
@@ -11,45 +12,47 @@ namespace blog.netcore.Services
     public class UserService : IUserService
     {
         private IUserRepository userRepository;
-        private TokenService tokenService;
+        private ITokenService tokenService;
+        public User CurrentUser { get; set; }
 
-        private User currentUser = null;
-        public User CurrentUser  {
-            get {
-                if (currentUser == null) {
-                    var session = this.tokenService.GetSession();
-                    var userName = session.Identity.Name;
-                    this.currentUser = this.Get(userName);
-                }
-                return this.currentUser;
-            }
-        }
-
-        public UserService(IUserRepository userRepository, TokenService tokenService) {
+        public UserService(IUserRepository userRepository, ITokenService tokenService)
+        {
             this.userRepository = userRepository;
             this.tokenService = tokenService;
+            this.InitCurrentUser();
         }
 
-        public IEnumerable<User> Get() {
-            return this.userRepository
-            .Get()
-            .AsEnumerable();
+        public async Task<IEnumerable<User>> Get()
+        {
+            return await this.userRepository.Get().ToListAsync();
         }
 
-        public User Get(int UserId) {
-            return this.userRepository.Get(UserId);
+        public async Task<User> Get(int UserId)
+        {
+            return await this.userRepository.Get(UserId);
         }
 
-        public User Get(string UserName) {
-            return this.userRepository.Get(UserName);
+        public async Task<User> Get(string UserName)
+        {
+            return await this.userRepository.Get(UserName);
         }
 
-        public void Create(User user) {
-            this.userRepository.Create(user);
+        public async Task Create(User user)
+        {
+            await this.userRepository.Create(user);
         }
 
-        public void Update(User user) {
-            this.userRepository.Update(user);
+        public async Task Update(User user)
+        {
+            await this.userRepository.Update(user);
+        }
+
+        private void InitCurrentUser() {
+            var session = this.tokenService.GetSession();
+            if (session != null) {
+                var userName = session.Identity.Name;
+                this.CurrentUser = this.Get(userName).Result;
+            }
         }
     }
 }

@@ -50,8 +50,8 @@ namespace blog.netcore
 
             var appSettings = settings.Get<AppSettings>();
             // AUTH
-            services.AddScoped<TokenService>();
-            services.AddScoped<AuthService>();
+            services.AddScoped<ITokenService, TokenService>();
+            services.AddScoped<IAuthService, AuthService>();
             // User
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IUserService, UserService>();
@@ -74,7 +74,7 @@ namespace blog.netcore
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IUserService userService, AuthService authService)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IUserService userService, IAuthService authService)
         {
             if (env.IsDevelopment())
             {
@@ -96,8 +96,8 @@ namespace blog.netcore
             app.UseCors();
         }
 
-        public void CreateAdminUser(IUserService userService, AuthService authService) {
-            if (userService.Get().Count() == 0) {
+        public void CreateAdminUser(IUserService userService, IAuthService authService) {
+            if (userService.Get().Result.Count() == 0) {
                 var admin = authService.CreateUser("admin", "admin");
                 userService.Create(admin);
             }

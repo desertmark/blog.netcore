@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using blog.netcore.Models;
+using blog.netcore.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -15,19 +16,19 @@ namespace blog.netcore.Controllers
     public class PostController : ControllerBase
     {
 
-        private readonly IPostService _postService;
-        private readonly ILogger<Post> _logger;
+        private readonly IPostService postService;
+        private readonly ILogger<Post> logger;
 
         public PostController(ILogger<Post> logger, IPostService postService)
         {
-            _logger = logger;
-            _postService = postService;
+            this.logger = logger;
+            this.postService = postService;
         }
 
         [HttpGet]
-        public IEnumerable<Post> Get()
+        public async Task<IActionResult> Get()
         {
-            return _postService.Get();
+            return Ok(await postService.Get());
         }
     }
 }

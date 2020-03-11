@@ -1,10 +1,11 @@
 using System.Linq;
+using System.Threading.Tasks;
 using blog.netcore.Models;
 
 public interface IUserRepository {
     IQueryable<User> Get();
-    User Get(string UserName);
-    User Get(int UserId);
-    void Create(User user);
-    void Update(User user);
+    Task<User> Get(string UserName);
+    Task<User> Get(int UserId);
+    Task Create(User user);
+    Task Update(User user);
 }

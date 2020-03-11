@@ -7,13 +7,13 @@ namespace blog.netcore.Repositories
 {
     public class PostRepository : IPostRepository
     {
-        private BlogContext _db;
+        private BlogContext db;
         public PostRepository(BlogContext db) {
-            this._db = db;
+            this.db = db;
         }
 
         public IQueryable<Post> Get() {
-            return this._db.Posts.AsQueryable();
+            return this.db.Posts.AsQueryable();
         }
     }
 }

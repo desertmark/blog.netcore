@@ -1,36 +1,39 @@
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using blog.netcore.Context;
 using blog.netcore.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace blog.netcore.Repositories
 {
     public class UserRepository : IUserRepository
     {
-        private BlogContext _db;
+        private BlogContext db;
         public UserRepository(BlogContext db) {
-            this._db = db;
+            this.db = db;
         }
 
         public IQueryable<User> Get() {
-            return this._db.Users.AsQueryable();
-        }
-        public User Get(int UserId) {
-            return this._db.Users.First(u => u.UserId == UserId);
+            return this.db.Users.AsQueryable();
         }
 
-        public User Get(string UserName) {
-            return this._db.Users.First(u => u.UserName == UserName);
+        public async Task<User> Get(int UserId) {
+            return await this.db.Users.FirstOrDefaultAsync(u => u.UserId == UserId);
         }
 
-        public void Create(User user) {
-            this._db.Add(user);
-            this._db.SaveChanges();
+        public async Task<User> Get(string UserName) {
+            return await this.db.Users.FirstOrDefaultAsync(u => u.UserName == UserName);
         }
 
-        public void Update(User user) {
-            this._db.Users.Update(user);
-            this._db.SaveChanges();
+        public async Task Create(User user) {
+            await this.db.AddAsync(user);
+            await this.db.SaveChangesAsync();
+        }
+
+        public async Task Update(User user) {
+            this.db.Users.Update(user);
+            await this.db.SaveChangesAsync();
         }
     }
 }

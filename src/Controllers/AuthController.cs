@@ -6,7 +6,6 @@ using blog.netcore.Models;
 using blog.netcore.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using blog.netcore.Models;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
@@ -20,10 +19,10 @@ namespace blog.netcore.Controllers
     {
 
         private readonly IUserService userService;
-        private readonly AuthService authService;
+        private readonly IAuthService authService;
         private readonly ILogger<Post> logger;
 
-        public AuthController(ILogger<Post> logger, IUserService userService, AuthService authService)
+        public AuthController(ILogger<Post> logger, IUserService userService, IAuthService authService)
         {
             this.logger = logger;
             this.userService = userService;
@@ -33,10 +32,10 @@ namespace blog.netcore.Controllers
         [HttpPost]
         [AllowAnonymous]
         [Route("token")]
-        public IActionResult Post([FromBody] LoginModel model)
+        public async Task<IActionResult> Post([FromBody] LoginModel model)
         {
             try {
-                var refresh = authService.Login(model.UserName, model.Password);
+                var refresh = await authService.Login(model.UserName, model.Password);
                 return Ok(new TokenResponse() {
                     RefreshToken = refresh.Refresh.EncodedToken,
                     Token = refresh.Token.EncodedToken,
@@ -59,9 +58,9 @@ namespace blog.netcore.Controllers
         [HttpPost]
         [AllowAnonymous]
         [Route("refresh")]
-        public IActionResult Post([FromBody] RefreshModel model) {
+        public async Task<IActionResult> Post([FromBody] RefreshModel model) {
             try {
-                var refresh = this.authService.RefreshToken(model.RefreshToken);
+                var refresh = await this.authService.RefreshToken(model.RefreshToken);
                 return Ok(new TokenResponse() {
                     RefreshToken = refresh.Refresh.EncodedToken,
                     Token = refresh.Token.EncodedToken,

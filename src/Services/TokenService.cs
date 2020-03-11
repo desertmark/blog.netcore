@@ -14,17 +14,17 @@ using Microsoft.Extensions.Options;
 
 namespace blog.netcore.Services
 {
-    public class TokenService
+    public class TokenService : ITokenService
     {
-        private HttpContext _context;
-        private ILogger _logger;
+        private HttpContext context;
+        private ILogger logger;
         private JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
-        private AppSettings _appSettings;
+        private AppSettings appSettings;
 
         public TokenService(IOptions<AppSettings> appSettings, IHttpContextAccessor contextAccessor, ILogger<Token> logger) {
-            _context = contextAccessor.HttpContext;
-            _appSettings = appSettings.Value;
-            _logger = logger;
+            this.context = contextAccessor.HttpContext;
+            this.appSettings = appSettings.Value;
+            this.logger = logger;
         }
         public JwtSecurityToken DecodeToken(string token)
         {
@@ -34,11 +34,11 @@ namespace blog.netcore.Services
 
         public ClaimsPrincipal GetSession()
         {
-            return this._context.User;
+            return this.context?.User;
         }
 
         public SymmetricSecurityKey GenerateUserKey(User user) {
-            var key = this._appSettings.Secret + user.Nonce;
+            var key = this.appSettings.Secret + user.Nonce;
             return new SymmetricSecurityKey(Encoding.ASCII.GetBytes(key));
         }
 

@@ -1,6 +1,9 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using blog.netcore.Models;
-
-public interface IPostService {
-    IEnumerable<Post> Get();
+namespace blog.netcore.Services 
+{
+    public interface IPostService {
+        Task<IEnumerable<Post>> Get();
+    }
 }
