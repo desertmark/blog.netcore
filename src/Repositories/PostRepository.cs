@@ -5,15 +5,9 @@ using blog.netcore.Models;
 
 namespace blog.netcore.Repositories
 {
-    public class PostRepository : IPostRepository
+    public class PostRepository : BaseRepository<Post>, IPostRepository
     {
-        private BlogContext db;
-        public PostRepository(BlogContext db) {
-            this.db = db;
-        }
-
-        public IQueryable<Post> Get() {
-            return this.db.Posts.AsQueryable();
+        public PostRepository(BlogContext db): base(db) {
         }
     }
 }

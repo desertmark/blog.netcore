@@ -26,9 +26,36 @@ namespace blog.netcore.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> Get([FromQuery] PostFilter filters)
         {
-            return Ok(await postService.Get());
+            var items = await this.postService.Get(filters);
+            var total = await this.postService.Count();
+            return Ok(new PaginatedResponse<Post>() {
+                Items = items,
+                Total = total,
+                Page = filters.Page,
+                Size = filters.Size
+            });
+        }
+        [HttpGet("{id}")]
+        public async Task<IActionResult> Get([FromRoute] int id)
+        {
+            return Ok(await postService.Get(id));
+        }
+        [HttpPost]
+        public async Task<IActionResult> Post([FromBody] Post model) {
+            var post = await this.postService.Create(model);
+            return Created($"/Post/{post.PostId}",post);
+        }
+
+        [HttpDelete]
+        public async Task<IActionResult> Delete([FromRoute] int postId) {
+            try {
+                await this.postService.Delete(postId);
+                return NoContent();
+            } catch(PublicException error) {
+                return BadRequest(new ErrorResponse() { Message = error.Message });
+            }
         }
     }
 }

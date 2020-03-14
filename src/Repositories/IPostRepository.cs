@@ -1,6 +1,5 @@
-using System.Linq;
 using blog.netcore.Models;
-
-public interface IPostRepository {
-    IQueryable<Post> Get();
+namespace blog.netcore.Repositories {
+    public interface IPostRepository : IBaseRepository<Post> {
+    }
 }

@@ -64,13 +64,13 @@ namespace blog.netcore.Services
         public Token GenerateToken(User user) {
             // token type access: valid to access api resources
             var claims = this.GetClaims(user).Append(new Claim(JwtRegisteredClaimNames.Typ, "access"));
-            return this.GenerateToken(user, DateTime.Now.AddSeconds(5), claims);
+            return this.GenerateToken(user, DateTime.Now.AddSeconds(3600), claims);
         }
 
         public Token GenerateRefreshToken(User user) {
             // token type refresh: only valid in refresh token endpoint
             var claims = this.GetClaims(user).Append(new Claim(JwtRegisteredClaimNames.Typ, "refresh"));
-            return this.GenerateToken(user, DateTime.Now.AddSeconds(20), claims);
+            return this.GenerateToken(user, DateTime.Now.AddSeconds(7200), claims);
         }
 
         private Token GenerateToken(User user, DateTime expires, IEnumerable<Claim> claims)
