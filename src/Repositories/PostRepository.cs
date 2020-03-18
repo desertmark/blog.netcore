@@ -7,7 +7,7 @@ namespace blog.netcore.Repositories
 {
     public class PostRepository : BaseRepository<Post>, IPostRepository
     {
-        public PostRepository(BlogContext db): base(db) {
+        public PostRepository(IServiceProvider provider): base(provider) {
         }
     }
 }

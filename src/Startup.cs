@@ -44,9 +44,15 @@ namespace blog.netcore
             services.Configure<AppSettings>(settings);
             // Context
             services.AddDbContext<BlogContext>();
+            // Transient context to do paralel work using threads
+            services.AddDbContext<BlogContextTransient>(ServiceLifetime.Transient);
             // Post
             services.AddScoped<IPostRepository, PostRepository>();
             services.AddScoped<IPostService, PostService>();
+
+            // Comment
+            services.AddScoped<ICommentRepository, CommentRepository>();
+            services.AddScoped<ICommentService, CommentService>();
 
             var appSettings = settings.Get<AppSettings>();
             // AUTH

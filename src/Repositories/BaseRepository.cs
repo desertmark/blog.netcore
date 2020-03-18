@@ -10,10 +10,20 @@ namespace blog.netcore.Repositories
 {
     public class BaseRepository<T> : IBaseRepository<T> where T: class
     {
+        // Transient DbContext to do pararlel work.
+        protected BlogContextTransient dbTransient {
+            get {
+                return (BlogContextTransient) this.provider.GetService(typeof(BlogContextTransient));
+            }
+        }
+        // Cached Instance to do transactional work.
         protected BlogContext db;
+
         private PropertyInfo IdPropertyInfo;
-        public BaseRepository(BlogContext db) {
-            this.db = db;
+        private IServiceProvider provider;
+        public BaseRepository(IServiceProvider provider) {
+            this.provider = provider;
+            this.db = (BlogContext) this.provider.GetService(typeof(BlogContext));
             this.InitIdProperty();
         }
 

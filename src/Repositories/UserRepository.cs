@@ -9,7 +9,7 @@ namespace blog.netcore.Repositories
 {
     public class UserRepository : BaseRepository<User>, IUserRepository
     {
-        public UserRepository(BlogContext db): base(db) {
+        public UserRepository(IServiceProvider provider): base(provider) {
         }
 
         public async Task<User> Get(string UserName) {

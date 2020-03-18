@@ -31,10 +31,10 @@ namespace blog.netcore.Controllers
             var items = await this.postService.Get(filters);
             var total = await this.postService.Count();
             return Ok(new PaginatedResponse<Post>() {
-                Items = items,
                 Total = total,
                 Page = filters.Page,
-                Size = filters.Size
+                Size = filters.Size,
+                Items = items
             });
         }
         [HttpGet("{id}")]

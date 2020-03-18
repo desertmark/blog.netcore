@@ -1,11 +1,11 @@
 using System;
-using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace blog.netcore.Models
 {
-    public class Post
+    public class Comment
     {
-        public int PostId { get; set; }
+        public int CommentId { get; set; }
 
         public DateTime CreatedAt { get; set; }
 
@@ -13,6 +13,8 @@ namespace blog.netcore.Models
 
         public User User { get; set; }
 
-        public ICollection<Comment> Comments  { get; set; }
+        [JsonIgnore]
+        public Post Post { get; set; }
+
     }
 }

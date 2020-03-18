@@ -11,25 +11,34 @@ namespace blog.netcore.Services
     public class PostService : IPostService
     {
         private readonly PostFilter defaultFilters = new PostFilter();
+        private ICommentRepository commentRepository;
         private IPostRepository postRepository;
         private IUserService userService;
-        public PostService(IPostRepository postRepository, IUserService userService) {
+        public PostService(IPostRepository postRepository, IUserService userService, ICommentRepository commentRepository) {
             this.postRepository = postRepository;
             this.userService = userService;
+            this.commentRepository = commentRepository;
         }
 
         public async Task<IEnumerable<Post>> Get(PostFilter filters = null) {
             if (filters == null) {
                 filters = this.defaultFilters;
             }
-            var currentUser = this.userService.CurrentUser;
-            return await this.postRepository
-            .Get()
-            .Include("User")
-            .Where(post => post.User.UserId == currentUser.UserId)
-            .Skip(filters.Page * filters.Size)
-            .Take(filters.Size)
-            .ToListAsync();
+
+            return await Task.Run(async () => {
+                var currentUser = this.userService.CurrentUser;
+                var posts = await this.postRepository
+                .Get()
+                .Where(post => post.User.UserId == currentUser.UserId)
+                .Skip(filters.Page * filters.Size)
+                .Take(filters.Size)
+                .Include("User")
+                .ToListAsync();
+
+                posts = await this.LoadRecentComments(posts);
+
+                return posts.AsEnumerable();
+            });
         }
 
         public async Task<int> Count() {
@@ -54,6 +63,28 @@ namespace blog.netcore.Services
         public async Task<Post> Get(int postId)
         {
             return await this.postRepository.Get(postId);
+        }
+
+        // loads takes a post list and loads the comments porperty with the last recent posts of each post.
+        private async Task<List<Post>> LoadRecentComments(List<Post> posts) {
+            var commentsByPost = await this.GetRecentCommentsByPosts(posts);
+            for (int i = 0; i < posts.Count; i++)
+            {
+                posts[i].Comments = commentsByPost[i];
+            }
+            return posts;
+        } 
+
+        // iterates throught a post list and gets the last recent post of each post.
+        private async Task<ICollection<Comment>[]> GetRecentCommentsByPosts(List<Post> posts) {
+            var taskList = new List<Task<ICollection<Comment>>>();
+            posts.ForEach(post => taskList.Add(this.GetRecentComments(post.PostId)));
+            return await Task.WhenAll(taskList);
+        }
+
+        // loads the last recet comments of a post by the given post id
+        private async Task<ICollection<Comment>> GetRecentComments(int postId) {
+            return (ICollection<Comment>) await this.commentRepository.GetLastRecent(postId, 2);
         }
     }
 }
